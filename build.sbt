@@ -1,3 +1,5 @@
+import sbt.stringToProcess
+
 lazy val commonSettings = Seq(
   name := "InAdvisor",
   organization := "lt.markav.inadvisor",
@@ -10,7 +12,10 @@ val ScalatraVersion = "2.6.2"
 lazy val root = (project in file("."))
   .settings(
     commonSettings,
-    commands ++= Seq(launch)
+    unmanagedSourceDirectories in Compile += baseDirectory.value / "webpage/src",
+    unmanagedSourceDirectories in Compile += baseDirectory.value / "webpage/web",
+    unmanagedSourceDirectories in Compile += baseDirectory.value / "backend/src",
+    commands ++= Seq(launch, copyDevJs)
   )
 
 lazy val backend = (project in file("backend"))
@@ -43,7 +48,22 @@ lazy val webpage = (project in file("webpage"))
   )
 
 lazy val launch = Command.command("launch") { state =>
-  "webpage/fastOptJS" :: "backend/jetty:start" :: state
+  "webpage/fastOptJS" ::
+    "backend/jetty:start" ::
+    state
+}
+
+lazy val copyDevJs = Command.command("copyDevJs") { state =>
+  List(
+    List("webpage/target/scala-2.12/inadvisor-fastopt.js", "backend/src/main/resources/inadvisor.js"),
+    List("webpage/target/scala-2.12/inadvisor-jsdeps.js", "backend/src/main/resources/libs.js")
+  ).foreach(action => {
+    s"cp ${action.head} ${action.last}".!(state.log) match {
+      case 0 => state.log.info(s"JS file ${action.head} copied to ${action.last}")
+      case 1 => state.log.error(s"JS file copy failed: ${action.head} to ${action.last}")
+    }
+  })
+  state
 }
 
 
