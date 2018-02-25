@@ -1,12 +1,23 @@
+lazy val commonSettings = Seq(
+  name := "InAdvisor",
+  organization := "lt.markav.inadvisor",
+  version := "0.1.0",
+  scalaVersion := "2.12.3"
+)
+
 val ScalatraVersion = "2.6.2"
+
+lazy val root = (project in file("."))
+  .settings(
+    commonSettings,
+    commands ++= Seq(launch)
+  )
+
 lazy val backend = (project in file("backend"))
   .enablePlugins(SbtTwirl)
   .enablePlugins(ScalatraPlugin)
   .settings(
-    organization := "com.example",
-    name := "My Scalatra Web App",
-    version := "0.1.0-SNAPSHOT",
-    scalaVersion := "2.12.4",
+    commonSettings,
     resolvers += Classpaths.typesafeReleases,
     libraryDependencies ++= Seq(
       "org.scalatra" %% "scalatra" % ScalatraVersion,
@@ -20,9 +31,7 @@ lazy val backend = (project in file("backend"))
 lazy val webpage = (project in file("webpage"))
   .enablePlugins(ScalaJSPlugin)
   .settings(
-    name := "InAdvisor",
-    version := "0.1",
-    scalaVersion := "2.12.4",
+    commonSettings,
     scalaJSUseMainModuleInitializer := true,
     skip in packageJSDependencies := false,
     libraryDependencies ++= Seq(
@@ -33,8 +42,8 @@ lazy val webpage = (project in file("webpage"))
     )
   )
 
-lazy val launch = taskKey[Unit]("Launch solution")
-launch := {
-//  fastOptJS in webpage
-//  JettyPlugin.jettyRunner in ContainerPlugin.start in backend
+lazy val launch = Command.command("launch") { state =>
+  "webpage/fastOptJS" :: "backend/jetty:start" :: state
 }
+
+
