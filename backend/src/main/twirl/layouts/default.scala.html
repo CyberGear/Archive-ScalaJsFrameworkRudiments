@@ -1,10 +1,11 @@
-@(title: String, headline: String)(body: Html)
+@(title: String)(body: Html)
 <html>
   <head>
     <title>@title</title>
+    <script type="text/javascript" src="js/third-party-dependencies.js"></script>
   </head>
   <body>
-    <h1>@headline</h1>
     @body
   </body>
+  <script type="text/javascript" src="js/inadvisor.js"></script>
 </html>

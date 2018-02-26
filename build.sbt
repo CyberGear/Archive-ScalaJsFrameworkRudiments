@@ -49,21 +49,28 @@ lazy val webpage = (project in file("webpage"))
 
 lazy val launch = Command.command("launch") { state =>
   "webpage/fastOptJS" ::
+    "copyDevJs" ::
     "backend/jetty:start" ::
     state
 }
 
 lazy val copyDevJs = Command.command("copyDevJs") { state =>
-  List(
-    List("webpage/target/scala-2.12/inadvisor-fastopt.js", "backend/src/main/resources/inadvisor.js"),
-    List("webpage/target/scala-2.12/inadvisor-jsdeps.js", "backend/src/main/resources/libs.js")
-  ).foreach(action => {
-    s"cp ${action.head} ${action.last}".!(state.log) match {
-      case 0 => state.log.info(s"JS file ${action.head} copied to ${action.last}")
-      case 1 => state.log.error(s"JS file copy failed: ${action.head} to ${action.last}")
-    }
-  })
+  copy(state,
+    "backend/target/webapp/js/",
+    "webpage/target/scala-2.12/inadvisor-fastopt.js" -> "inadvisor.js",
+    "webpage/target/scala-2.12/inadvisor-jsdeps.js" -> "third-party-dependencies.js"
+  )
   state
 }
 
-
+def copy(state: State, targetDir: String, direction: (String, String)*): Unit = {
+  new File(targetDir).mkdirs()
+  direction.map(d => d._1 -> (targetDir + d._2)).foreach(action => {
+    s"cp ${action._1} ${action._2}".!(state.log) match {
+      case 0 => state.log.info(s"JS file ${action._1} copied to ${action._2}")
+      case 1 =>
+        state.log.error(s"JS file copy failed: ${action._1} to ${action._2}")
+        state.fail
+    }
+  })
+}

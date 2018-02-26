@@ -1,10 +1,10 @@
-package com.example.app
+package lt.markav.inadvisor
 
 import org.scalatra.test.scalatest._
 
-class MyScalatraServletTests extends ScalatraFunSuite {
+class HomePageServletTests extends ScalatraFunSuite {
 
-  addServlet(classOf[MyScalatraServlet], "/*")
+  addServlet(classOf[HomePageServlet], "/*")
 
   test("GET / on MyScalatraServlet should return status 200"){
     get("/"){
