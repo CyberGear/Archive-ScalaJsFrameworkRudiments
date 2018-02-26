@@ -4,7 +4,9 @@ lazy val commonSettings = Seq(
   name := "InAdvisor",
   organization := "lt.markav.inadvisor",
   version := "0.1.0",
-  scalaVersion := "2.12.3"
+  scalaVersion := "2.12.3",
+  test in assembly := {},
+  assemblyJarName in assembly := s"InAdvisor-${version.value}.jar"
 )
 
 val ScalatraVersion = "2.6.2"
@@ -13,8 +15,9 @@ lazy val root = (project in file("."))
   .settings(
     commonSettings,
     unmanagedSourceDirectories in Compile += baseDirectory.value / "webpage/src",
-    unmanagedSourceDirectories in Compile += baseDirectory.value / "webpage/web",
     unmanagedSourceDirectories in Compile += baseDirectory.value / "backend/src",
+    unmanagedResourceDirectories in Compile += baseDirectory.value / "backend/src/main/twirl",
+    unmanagedResourceDirectories in Compile += baseDirectory.value / "backend/src/main/webapp",
     commands ++= Seq(launch, copyDevJs)
   )
 
@@ -73,4 +76,13 @@ def copy(state: State, targetDir: String, direction: (String, String)*): Unit = 
         state.fail
     }
   })
+}
+
+clean := {
+  val log = streams.value.log
+  List("target", "project/target", "backend/target", "webpage/target")
+    .foreach(path => s"rm -rf $path".!(log) match {
+      case 0 => log.info(s"Deleting $path [OK]")
+      case 1 => log.error(s"Deleting $path [FAILED]")
+    })
 }
