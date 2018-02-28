@@ -27,13 +27,20 @@ lazy val backend = (project in file("backend"))
   .settings(
     commonSettings,
     resolvers += Classpaths.typesafeReleases,
+    mainClass in assembly := Some("StandAloneLauncher"),
     libraryDependencies ++= Seq(
       "org.scalatra" %% "scalatra" % ScalatraVersion,
+      "org.scalatra" %% "scalatra-scalate" % ScalatraVersion,
       "org.scalatra" %% "scalatra-scalatest" % ScalatraVersion % "test",
       "ch.qos.logback" % "logback-classic" % "1.2.3" % "runtime",
-      "org.eclipse.jetty" % "jetty-webapp" % "9.4.8.v20171121" % "container",
+      "org.eclipse.jetty" % "jetty-webapp" % "9.4.8.v20171121" % "container;compile",
       "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
-    )
+    ),
+    assembledMappings in assembly += {
+      sbtassembly.MappingSet(None, Vector(
+        (baseDirectory.value / "target" / "application.conf") -> "application.conf"
+      ))
+    }
   )
 
 lazy val webpage = (project in file("webpage"))
@@ -59,7 +66,7 @@ lazy val launch = Command.command("launch") { state =>
 
 lazy val copyDevJs = Command.command("copyDevJs") { state =>
   copy(state,
-    "backend/target/webapp/js/",
+    "backend/target/scala-2.12/classes/web/js/",
     "webpage/target/scala-2.12/inadvisor-fastopt.js" -> "inadvisor.js",
     "webpage/target/scala-2.12/inadvisor-jsdeps.js" -> "third-party-dependencies.js"
   )
