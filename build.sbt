@@ -1,13 +1,15 @@
-import sbt.stringToProcess
+import java.io
+
+import sbt.{Def, stringToProcess}
 
 lazy val commonSettings = Seq(
-  name := "InAdvisor",
-  organization := "lt.markav.inadvisor",
-  version := "0.1.0",
-  scalaVersion := "2.12.3",
-  test in assembly := {},
-  assemblyJarName in assembly := s"InAdvisor-${version.value}.jar"
-)
+    name := "InAdvisor",
+    organization := "lt.markav.inadvisor",
+    version := "0.1.0",
+    scalaVersion := "2.12.3",
+    test in assembly := {},
+    assemblyJarName in assembly := s"InAdvisor-${version.value}.jar"
+  )
 
 val ScalatraVersion = "2.6.2"
 
@@ -18,7 +20,7 @@ lazy val root = (project in file("."))
     unmanagedSourceDirectories in Compile += baseDirectory.value / "backend/src",
     unmanagedResourceDirectories in Compile += baseDirectory.value / "backend/src/main/twirl",
     unmanagedResourceDirectories in Compile += baseDirectory.value / "backend/src/main/webapp",
-    commands ++= Seq(launch, copyDevJs)
+    commands ++= Seq(launch, copyDevJs, copyReleaseJs, assemblyDev, assemblyRelease)
   )
 
 lazy val backend = (project in file("backend"))
@@ -57,6 +59,12 @@ lazy val webpage = (project in file("webpage"))
     )
   )
 
+clean := {
+  (clean in root).value
+  (clean in webpage).value
+  (clean in backend).value
+}
+
 lazy val launch = Command.command("launch") { state =>
   "webpage/fastOptJS" ::
     "copyDevJs" ::
@@ -73,6 +81,29 @@ lazy val copyDevJs = Command.command("copyDevJs") { state =>
   state
 }
 
+lazy val copyReleaseJs = Command.command("copyReleaseJs") { state =>
+  copy(state,
+    "backend/target/scala-2.12/classes/web/js/",
+    "webpage/target/scala-2.12/inadvisor-opt.js" -> "inadvisor.js",
+    "webpage/target/scala-2.12/inadvisor-jsdeps.js" -> "third-party-dependencies.js"
+  )
+  state
+}
+
+lazy val assemblyDev = Command.command("assemblyDev") { state =>
+  "webpage/fastOptJS" ::
+  "copyDevJs" ::
+  "backend/assembly" ::
+  state
+}
+
+lazy val assemblyRelease = Command.command("assemblyRelease") { state =>
+  "webpage/fullOptJS" ::
+  "copyReleaseJs" ::
+  "backend/assembly" ::
+  state
+}
+
 def copy(state: State, targetDir: String, direction: (String, String)*): Unit = {
   new File(targetDir).mkdirs()
   direction.map(d => d._1 -> (targetDir + d._2)).foreach(action => {
@@ -83,13 +114,4 @@ def copy(state: State, targetDir: String, direction: (String, String)*): Unit = 
         state.fail
     }
   })
-}
-
-clean := {
-  val log = streams.value.log
-  List("target", "project/target", "backend/target", "webpage/target")
-    .foreach(path => s"rm -rf $path".!(log) match {
-      case 0 => log.info(s"Deleting $path [OK]")
-      case 1 => log.error(s"Deleting $path [FAILED]")
-    })
 }
