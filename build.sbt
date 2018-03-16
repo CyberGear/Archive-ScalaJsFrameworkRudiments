@@ -1,117 +1,77 @@
-import java.io
+import scala.sys.process.stringToProcess
 
-import sbt.{Def, stringToProcess}
+lazy val gitCommitCount = "git rev-list HEAD --count".!!.replace("\n", "")
+lazy val gitCommitHash = "git log --pretty=format:'%h' -n 1".!!.replace("'", "").replace("\n", "")
 
-lazy val commonSettings = Seq(
-    name := "InAdvisor",
-    organization := "lt.markav.inadvisor",
-    version := "0.1.0",
-    scalaVersion := "2.12.3",
-    test in assembly := {},
-    assemblyJarName in assembly := s"InAdvisor-${version.value}.jar"
-  )
+lazy val commonSettings = Seq[Def.Setting[_]](
+  scalaVersion := "2.12.4",
+  organization := "lt.markav",
+  name := "InAdvisor",
+  version := s"0.1.$gitCommitCount",
+  assemblyJarName in assembly := s"${name.value}-${version.value}.jar",
+  assemblyOutputPath in assembly := baseDirectory.value / ".." / (assemblyJarName in assembly value)
+)
 
-val ScalatraVersion = "2.6.2"
-
-lazy val root = (project in file("."))
+lazy val appShared = (crossProject in file("app-shared"))
+  .settings(commonSettings: _*)
   .settings(
-    commonSettings,
-    unmanagedSourceDirectories in Compile += baseDirectory.value / "webpage/src",
-    unmanagedSourceDirectories in Compile += baseDirectory.value / "backend/src",
-    unmanagedResourceDirectories in Compile += baseDirectory.value / "backend/src/main/twirl",
-    unmanagedResourceDirectories in Compile += baseDirectory.value / "backend/src/main/webapp",
-    commands ++= Seq(launch, copyDevJs, copyReleaseJs, assemblyDev, assemblyRelease)
-  )
-
-lazy val backend = (project in file("backend"))
-  .enablePlugins(SbtTwirl)
-  .enablePlugins(ScalatraPlugin)
-  .settings(
-    commonSettings,
-    resolvers += Classpaths.typesafeReleases,
-    mainClass in assembly := Some("StandAloneLauncher"),
+    name := "InAdvisorShared",
+    unmanagedSourceDirectories in Compile += baseDirectory.value / "shared" / "main" / "scala",
     libraryDependencies ++= Seq(
-      "org.scalatra" %% "scalatra" % ScalatraVersion,
-      "org.scalatra" %% "scalatra-scalate" % ScalatraVersion,
-      "org.scalatra" %% "scalatra-scalatest" % ScalatraVersion % "test",
-      "ch.qos.logback" % "logback-classic" % "1.2.3" % "runtime",
-      "org.eclipse.jetty" % "jetty-webapp" % "9.4.8.v20171121" % "container;compile",
-      "javax.servlet" % "javax.servlet-api" % "3.1.0" % "provided"
-    ),
-    assembledMappings in assembly += {
-      sbtassembly.MappingSet(None, Vector(
-        (baseDirectory.value / "target" / "application.conf") -> "application.conf"
-      ))
-    }
-  )
-
-lazy val webpage = (project in file("webpage"))
-  .enablePlugins(ScalaJSPlugin)
-  .settings(
-    commonSettings,
-    scalaJSUseMainModuleInitializer := true,
-    skip in packageJSDependencies := false,
-    libraryDependencies ++= Seq(
-      "be.doeraene" %%% "scalajs-jquery" % "0.9.1"
-    ),
-    jsDependencies ++= Seq(
-      "org.webjars" % "jquery" % "2.1.4" / "2.1.4/jquery.js"
+      "com.lihaoyi" %%% "scalatags" % "0.6.2",
+      "com.lihaoyi" %%% "upickle" % "0.4.4",
+      "com.lihaoyi" %%% "autowire" % "0.2.6",
+      "com.github.japgolly.scalacss" %%% "core" % "0.5.3",
+      "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3"
     )
   )
-
-clean := {
-  (clean in root).value
-  (clean in webpage).value
-  (clean in backend).value
-}
-
-lazy val launch = Command.command("launch") { state =>
-  "webpage/fastOptJS" ::
-    "copyDevJs" ::
-    "backend/jetty:start" ::
-    state
-}
-
-lazy val copyDevJs = Command.command("copyDevJs") { state =>
-  copy(state,
-    "backend/target/scala-2.12/classes/web/js/",
-    "webpage/target/scala-2.12/inadvisor-fastopt.js" -> "inadvisor.js",
-    "webpage/target/scala-2.12/inadvisor-jsdeps.js" -> "third-party-dependencies.js"
+  .jsSettings(
+    libraryDependencies ++= Seq(
+      "be.doeraene" %%% "scalajs-jquery" % "0.9.2"
+    ),
+    jsDependencies ++= Seq(
+      "org.webjars" % "jquery" % "2.1.3" / "2.1.3/jquery.js"
+    )
   )
-  state
-}
-
-lazy val copyReleaseJs = Command.command("copyReleaseJs") { state =>
-  copy(state,
-    "backend/target/scala-2.12/classes/web/js/",
-    "webpage/target/scala-2.12/inadvisor-opt.js" -> "inadvisor.js",
-    "webpage/target/scala-2.12/inadvisor-jsdeps.js" -> "third-party-dependencies.js"
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-http" % "10.1.0",
+      "com.typesafe.akka" %% "akka-actor" % "2.5.11",
+      "com.typesafe.akka" %% "akka-stream" % "2.5.11",
+      "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.2.1",
+      "org.webjars" % "bootstrap" % "3.2.0"
+    )
   )
-  state
-}
+lazy val appSharedJS = appShared.js
+lazy val appSharedJVM = appShared.jvm
 
-lazy val assemblyDev = Command.command("assemblyDev") { state =>
-  "webpage/fastOptJS" ::
-  "copyDevJs" ::
-  "backend/assembly" ::
-  state
-}
+lazy val appServer = (project in file("app-server"))
+  .settings(commonSettings: _*)
+  .settings(
+    (resources in Compile) += (fastOptJS in (appClient, Compile)).value.data,
+    (resources in Compile) += (packageJSDependencies in(appClient, Compile)).value
+  ).dependsOn(appSharedJVM)
 
-lazy val assemblyRelease = Command.command("assemblyRelease") { state =>
-  "webpage/fullOptJS" ::
-  "copyReleaseJs" ::
-  "backend/assembly" ::
-  state
-}
+lazy val appClient = (project in file("app-client"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(commonSettings: _*)
+  .settings(
+    scalaJSUseMainModuleInitializer := true,
+    skip in packageJSDependencies := false
+  ).dependsOn(appSharedJS)
 
-def copy(state: State, targetDir: String, direction: (String, String)*): Unit = {
-  new File(targetDir).mkdirs()
-  direction.map(d => d._1 -> (targetDir + d._2)).foreach(action => {
-    s"cp ${action._1} ${action._2}".!(state.log) match {
-      case 0 => state.log.info(s"JS file ${action._1} copied to ${action._2}")
-      case 1 =>
-        state.log.error(s"JS file copy failed: ${action._1} to ${action._2}")
-        state.fail
-    }
-  })
+lazy val root = (project in file("."))
+  .aggregate(appSharedJS, appSharedJVM, appClient, appServer)
+  .settings(commands += launch)
+
+lazy val launch = Command.command("launch") { state => "appServer/reStart" :: state }
+
+aggregate in assembly := false
+
+assembly in root := (assembly in appServer).value
+
+lazy val runJar = TaskKey[Unit]("runJar")
+runJar := {
+  val path = (assembly in appServer).value
+  s"java -jar $path".!
 }
