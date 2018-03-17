@@ -16,7 +16,7 @@ class Server(implicit val system: ActorSystem,
     "/" -> get {
       (pathSingleSlash & redirectToTrailingSlashIfMissing(StatusCodes.TemporaryRedirect)) {
         complete {
-          HttpEntity(`text/html(UTF-8)`, new HomePage().page)
+          HttpEntity(`text/html(UTF-8)`, new RootPage().page)
         }
       } ~ getFromResourceDirectory("")
     }

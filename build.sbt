@@ -9,7 +9,14 @@ lazy val commonSettings = Seq[Def.Setting[_]](
   name := "InAdvisor",
   version := s"0.1.$gitCommitCount",
   assemblyJarName in assembly := s"${name.value}-${version.value}.jar",
-  assemblyOutputPath in assembly := baseDirectory.value / ".." / (assemblyJarName in assembly value)
+  assemblyOutputPath in assembly := baseDirectory.value / ".." / (assemblyJarName in assembly value),
+  scalacOptions ++= Seq(
+    "-deprecation",
+    "-encoding", "UTF-8",
+    "-feature",
+    "-language:implicitConversions",
+    "-language:postfixOps"
+  )
 )
 
 lazy val appShared = (crossProject in file("app-shared"))
@@ -21,8 +28,9 @@ lazy val appShared = (crossProject in file("app-shared"))
       "com.lihaoyi" %%% "scalatags" % "0.6.2",
       "com.lihaoyi" %%% "upickle" % "0.4.4",
       "com.lihaoyi" %%% "autowire" % "0.2.6",
-      "com.github.japgolly.scalacss" %%% "core" % "0.5.3",
-      "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.3"
+      "com.lihaoyi" %%% "scalarx" % "0.3.2",
+      "com.github.japgolly.scalacss" %%% "core" % "0.5.5",
+      "com.github.japgolly.scalacss" %%% "ext-scalatags" % "0.5.5"
     )
   )
   .jsSettings(
@@ -48,7 +56,7 @@ lazy val appSharedJVM = appShared.jvm
 lazy val appServer = (project in file("app-server"))
   .settings(commonSettings: _*)
   .settings(
-    (resources in Compile) += (fastOptJS in (appClient, Compile)).value.data,
+    (resources in Compile) += (fastOptJS in(appClient, Compile)).value.data,
     (resources in Compile) += (packageJSDependencies in(appClient, Compile)).value
   ).dependsOn(appSharedJVM)
 

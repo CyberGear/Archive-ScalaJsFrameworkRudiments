@@ -10,7 +10,6 @@ import scalatags.text.Builder
 trait PageIds
 
 object PageIds extends PageIds {
-  val Content: TagId = "content"
-  val Label: TagId = "label"
+  val MainContainer: TagId = "mainContainer"
 }
 

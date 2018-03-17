@@ -1,33 +1,20 @@
 package lt.markav.inadvisor
 
-import autowire._
-import lt.markav.core.api.{AccountApi, AlarmsApi}
-import lt.markav.core.{PageIds, Rest, TagIdJsImplicits}
-import org.scalajs.dom
-import org.scalajs.jquery.jQuery
+import lt.markav.core.PageIds
+import lt.markav.core.Route
+import lt.markav.core.WidgetRouter
+import lt.markav.core.widget.HomePageWidget
+import org.scalajs.dom.document.getElementById
+import org.scalajs.dom.raw.Element
 
-import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
-import scalatags.JsDom.all._
+object Client extends App {
 
-object Client extends App with TagIdJsImplicits {
+  private val mainContainer: Element = getElementById(PageIds.MainContainer)
 
-  val inputBox = input.render
-  val outputBox = ul.render
+  new WidgetRouter(mainContainer)
+    .withWidgets(
+      Route("home", new HomePageWidget())
+    )
+    .listen()
 
-  jQuery(PageIds.Content).append(
-    div(
-      h1(PageIds.Label, "File Search"),
-      inputBox,
-      outputBox
-    ).render
-  )
-
-  Rest[AccountApi].label().call().foreach(data => jQuery(PageIds.Label).text(data))
-
-  inputBox.onkeyup = (e: dom.Event) => update()
-  update()
-
-  def update(): Unit = Rest[AlarmsApi].listAlarms("testUser").call().foreach { data =>
-    data.foreach(item => outputBox.appendChild(li(item).render))
-  }
 }
