@@ -6,7 +6,7 @@ trait Widget {
   def subPath: Path = Path()
 
   def route(path: Path)(implicit context: Context): Node =
-    if (path.notEmpty) Router.route(path)
+    if (path.nonEmpty) Router.route(path)
     else display
 
   def display: Node
