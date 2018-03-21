@@ -1,6 +1,5 @@
 package lt.markav.core.spaider
 
-import org.scalajs.dom
 import org.scalajs.dom.window
 
 case class Path(parts: List[String]) {
@@ -13,16 +12,16 @@ case class Path(parts: List[String]) {
 
   def isEmpty: Boolean = parts.isEmpty
   def nonEmpty: Boolean = parts.nonEmpty
+  def depth: Int = parts.length
 }
 
 object Path {
   def apply(): Path = Path(List())
 
+  def apply(parts: String*): Path = Path(parts.toList)
+
   def current: Path = Path(window.location.hash.split("/").tail.toList)
 
   implicit def toPath(part: String): Path = Path(List(part))
 
-  implicit class StringPathUtils(part: String) {
-    def / (otherPart: String): Path = Path(List(part, otherPart))
-  }
 }
