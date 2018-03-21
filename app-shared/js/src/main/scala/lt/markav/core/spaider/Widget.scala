@@ -1,16 +1,19 @@
 package lt.markav.core.spaider
 
-import org.scalajs.dom.Node
+import org.scalajs.dom.Element
 
 import scalatags.JsDom.TypedTag
 
 trait Widget {
-  val subPath: Path = Path()
+  type Tag = TypedTag[Element]
+  private[this] implicit val widget: Widget = this
+  val path: Path = Path()
+  val widgets: List[Widget] = List.empty
 
-  def route(path: Path)(implicit context: Context): TypedTag[_ <: Node] =
+  def route(path: Path)(implicit context: Context): Tag =
     if (path.nonEmpty) Router.route(path)
     else contents
 
-  def contents: TypedTag[_ <: Node]
+  def contents: Tag
 
 }
