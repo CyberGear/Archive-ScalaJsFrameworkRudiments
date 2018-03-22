@@ -13,29 +13,29 @@ import scalatags.text.Builder
 
 object RouterTest extends SimpleTestSuite {
 
-//  test("Routes to home widget with empty path") {
-//    val id = rndId
-//    implicit val widget: Widget = TestWidget(widgets = List(TestWidget(id)))
-//    assertEquals(Router.route(Path()).id, id)
-//  }
+  test("Routes to home widget with empty path") {
+    val id = rndId
+    implicit val widget: Widget = TestWidget(widgets = List(TestWidget(id)))
+    assertEquals(Router.route(Path()).id, id)
+  }
 
-//  test("Routes to home widget with 'home' path") {
-//    val path = "home"
-//    val id = rndId
-//    implicit val widget: Widget = TestWidget(widgets = List(TestWidget(id, path)))
-//    assertEquals(Router.route(path).id, id)
-//  }
+  test("Routes to home widget with 'home' path") {
+    val path = "home"
+    val id = rndId
+    implicit val widget: Widget = TestWidget(widgets = List(TestWidget(id, path)))
+    assertEquals(Router.route(path).id, id)
+  }
 
-//  test("Routes to top widget witch match full path") {
-//    val id1 = rndId
-//    val id2 = rndId
-//    val fullPath = Path("one") / "two" / "three"
-//    implicit val widget: Widget = TestWidget(widgets = List(
-//      buildBranch(id1, "one", "two", "three"),
-//      buildBranch(id2, fullPath)
-//    ))
-//    assertEquals(Router.route(fullPath).id, id2)
-//  }
+  test("Routes to top widget witch match full path") {
+    val id1 = rndId
+    val id2 = rndId
+    val fullPath = Path("one") / "two" / "three"
+    implicit val widget: Widget = TestWidget(widgets = List(
+      buildBranch(id1, "one", "two", "three"),
+      buildBranch(id2, fullPath)
+    ))
+    assertEquals(Router.route(fullPath).id, id2)
+  }
 
   test("Routes to deep node of the branch") {
     val id = rndId
@@ -52,11 +52,8 @@ object RouterTest extends SimpleTestSuite {
     def id: String = {
       println(tag.modifiers)
       type Attr = generic.AttrPair[Builder, String]
-      val attr = tag.modifiers.head.find(_.isInstanceOf[AttrPair]).map(_.asInstanceOf[Attr])
-      attr match {
-        case Some(a) => a.v
-        case None => "undefined"
-      }
+      val frag = tag.modifiers.head.head.asInstanceOf[StringFrag]
+      frag.v
     }
   }
 
