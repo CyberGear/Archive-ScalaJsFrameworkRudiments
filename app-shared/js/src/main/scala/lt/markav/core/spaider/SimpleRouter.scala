@@ -11,9 +11,16 @@ class SimpleRouter(val container: Element, override val widgets: List[Widget]) e
   private implicit val context: Context = this
   private implicit val ctx: Ctx.Owner = Ctx.Owner.safe()
 
-  val path = Var(Path.current)
-  window.onhashchange = _ => path() = Path.current
-  val page: Frag = Rx { Router.route(path()) }
+//  val path = Var(Path.current)
+//  window.onhashchange = _ => path() = Path.current
+//  val page: Frag = Rx { Router.route(path()) }
+//  page.applyTo(container)
+
+}
+
+class RootWidget(val container: Element, override val widgets: List[Widget]) extends Widget {
+
+  window.onhashchange = _ => webPath() = Path.current
   page.applyTo(container)
 
 }

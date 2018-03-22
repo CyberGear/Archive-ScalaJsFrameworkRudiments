@@ -35,11 +35,13 @@ lazy val appShared = (crossProject in file("app-shared"))
   )
   .jsSettings(
     libraryDependencies ++= Seq(
-      "be.doeraene" %%% "scalajs-jquery" % "0.9.2"
+      "be.doeraene" %%% "scalajs-jquery" % "0.9.2",
+      "io.monix" %%% "minitest" % "2.1.1" % "test"
     ),
     jsDependencies ++= Seq(
       "org.webjars" % "jquery" % "2.1.3" / "2.1.3/jquery.js"
-    )
+    ),
+    testFrameworks += new TestFramework("minitest.runner.Framework")
   )
   .jvmSettings(
     libraryDependencies ++= Seq(
@@ -65,7 +67,9 @@ lazy val appClient = (project in file("app-client"))
   .settings(commonSettings: _*)
   .settings(
     scalaJSUseMainModuleInitializer := true,
-    skip in packageJSDependencies := false
+    skip in packageJSDependencies := false,
+    libraryDependencies += "io.monix" %%% "minitest" % "2.1.1" % "test",
+    testFrameworks += new TestFramework("minitest.runner.Framework")
   ).dependsOn(appSharedJS)
 
 lazy val root = (project in file("."))

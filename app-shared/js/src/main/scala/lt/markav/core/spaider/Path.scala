@@ -14,6 +14,8 @@ case class Path(parts: List[String]) extends Logging {
 
   def after(other: Path): Path = Path(parts diff other.parts)
 
+  def `../` : Path = Path(parts.init)
+
   def isEmpty: Boolean = parts.isEmpty
 
   def nonEmpty: Boolean = parts.nonEmpty
