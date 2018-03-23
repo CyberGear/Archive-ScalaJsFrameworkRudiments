@@ -22,7 +22,7 @@ case class Path(parts: List[String]) extends Logging {
 
   def depth: Int = parts.length
 
-  override def toString: String = parts.mkString("#/", "/", "")
+  override def toString: String = parts.mkString("/", "/", "")
 }
 
 object Path extends Logging {

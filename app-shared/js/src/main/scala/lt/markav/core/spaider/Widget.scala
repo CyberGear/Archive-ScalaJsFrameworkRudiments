@@ -21,7 +21,7 @@ trait Widget {
   val page: Frag = Rx { Router.route(webPath()) }
 
   def route(path: Path): Tag = {
-    if (widgets.nonEmpty) { webPath() = path }
+    if (widgets.nonEmpty) webPath() = path
     contents
   }
 
