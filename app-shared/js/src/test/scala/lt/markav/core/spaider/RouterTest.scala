@@ -15,14 +15,14 @@ class RouterTest extends FlatSpec with Matchers {
   it should "routes to 404 when no widgets added" in {
     implicit val widget: Widget = TestWidget()
 
-    Router.route(Path()).render.pageId should be("404")
+    Router.route(Path()).render.outerHTML should include ("404")
   }
 
   it should "routes to home widget with empty path" in {
     val id = rndId
     implicit val widget: Widget = TestWidget(widgets = List(TestWidget(id)))
 
-    Router.route(Path()).render.pageId should be(id)
+    Router.route(Path()).render.outerHTML should include (id)
   }
 
   it should "routes to home widget with 'home' path" in {
@@ -30,7 +30,7 @@ class RouterTest extends FlatSpec with Matchers {
     val path: Path = "home"
     implicit val widget: Widget = TestWidget(widgets = List(TestWidget(id, path)))
 
-    Router.route(path).render.pageId should be(id)
+    Router.route(path).render.outerHTML should include (id)
   }
 
   it should "routes to top widget witch match full path" in {
@@ -42,7 +42,7 @@ class RouterTest extends FlatSpec with Matchers {
       buildBranch(id2, fullPath)
     ))
 
-    Router.route(fullPath).render.pageId should be(id2)
+    Router.route(fullPath).render.outerHTML should include (id2)
   }
 
   it should "routes to two level depth" in {
@@ -51,28 +51,12 @@ class RouterTest extends FlatSpec with Matchers {
     implicit val widget: Widget = TestWidget(widgets = List(
       buildBranch(id, path.parts.map(Path(_)): _*)
     ))
-    warn(widget)
-    val value = Router.route(path)
-    warn(value.modifiers)
-
-//    value.id should be(id)
+    Router.route(path).render.outerHTML should include (id)
   }
 
   /** */
 
-  implicit class IdGetter(element: Element) {
-    def pageId: String = {
-      element.innerHTML
-    }
-  }
-
   private def rndId = UUID.randomUUID().toString.substring(0, 3)
-
-  def warn(str: Any): Unit = {
-    def color = (str: String) => Console.BLUE + str + Console.RESET
-
-    println(s"[${color("warn")}] ${color(str.toString)}")
-  }
 
 }
 
@@ -82,14 +66,8 @@ case class TestWidget(wid: String = "",
                       override val widgets: List[Widget] = List.empty)
   extends Widget {
   override def contents: Tag =
-    if (wid.isEmpty) {
-      println(s"[info] $path")
-      div("", page)
-    }
-    else {
-      println(s"[info] $path($wid)")
-      div(id:="pageId", wid)
-    }
+    if (wid.isEmpty) div("", page)
+    else div(wid)
 
   override def toString: String = s"$path($wid) -> [${widgets.mkString(",")}]"
 }
