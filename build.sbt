@@ -36,11 +36,13 @@ lazy val appShared = (crossProject in file("app-shared"))
   .jsSettings(
     libraryDependencies ++= Seq(
       "be.doeraene" %%% "scalajs-jquery" % "0.9.2",
-      "io.monix" %%% "minitest" % "2.1.1" % "test"
+      "io.monix" %%% "minitest" % "2.1.1" % "test",
+      "org.scalatest" %%% "scalatest" % "3.0.5" % "test"
     ),
     jsDependencies ++= Seq(
       "org.webjars" % "jquery" % "2.1.3" / "2.1.3/jquery.js"
     ),
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv,
     testFrameworks += new TestFramework("minitest.runner.Framework")
   )
   .jvmSettings(

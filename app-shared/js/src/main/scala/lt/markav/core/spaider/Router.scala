@@ -14,24 +14,16 @@ object Router extends Logging {
   }
 
   def route(path: Path)(implicit context: Widget): TypedTag[Element] = {
-    if (path.isEmpty) {
-      val widget = context.widgets.headOption.getOrElse(`404Widget`)
-      println(s"[info] Routing to '$path' goes to '${widget.getClass.getSimpleName}'")
-      widget.contents
-    }
+    if (path.isEmpty) context.widgets.headOption.getOrElse(`404Widget`).contents
     else {
       @tailrec
-      def loop(p: Path, wid: Option[Widget]): Option[Widget] =
+      def loop(p: Path, wid: Option[Widget] = None): Option[Widget] =
         if (p.isEmpty || wid.isDefined) wid
         else loop(p `../`, context.widgets.find(_.path == p))
 
-      loop(path, None) match {
-        case Some(widget) =>
-          println(s"[info] Routing to '${path after widget.path}'")
-          widget.route(path after widget.path)
-        case None =>
-          println(s"[info] Routing to '404'")
-          `404Widget`.contents
+      loop(path) match {
+        case Some(widget) => widget.route(path after widget.path)
+        case None => `404Widget`.contents
       }
     }
   }

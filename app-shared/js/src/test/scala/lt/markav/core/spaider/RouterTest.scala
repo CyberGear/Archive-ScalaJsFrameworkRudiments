@@ -3,37 +3,37 @@ package lt.markav.core.spaider
 import java.util.UUID
 
 import lt.markav.core.spaider.TestWidget.buildBranch
-import minitest.SimpleTestSuite
 import org.scalajs.dom.Element
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
 
 import scalatags.JsDom
 import scalatags.JsDom.all._
-import scalatags.generic
-import scalatags.text.Builder
 
-object RouterTest extends SimpleTestSuite {
+class RouterTest extends FlatSpec with Matchers {
 
-  test("Routes to 404 when no widgets added") {
+  it should "routes to 404 when no widgets added" in {
     implicit val widget: Widget = TestWidget()
-    warn(widget)
-    assertEquals(Router.route(Path()).id, "404")
+
+    Router.route(Path()).render.pageId should be("404")
   }
 
-  test("Routes to home widget with empty path") {
+  it should "routes to home widget with empty path" in {
     val id = rndId
     implicit val widget: Widget = TestWidget(widgets = List(TestWidget(id)))
-    warn(widget)
-    assertEquals(Router.route(Path()).id, id)
+
+    Router.route(Path()).render.pageId should be(id)
   }
 
-  test("Routes to home widget with 'home' path") {
+  it should "routes to home widget with 'home' path" in {
     val id = rndId
-    implicit val widget: Widget = TestWidget(widgets = List(TestWidget(id, "home")))
-    warn(widget)
-    assertEquals(Router.route("home").id, id)
+    val path: Path = "home"
+    implicit val widget: Widget = TestWidget(widgets = List(TestWidget(id, path)))
+
+    Router.route(path).render.pageId should be(id)
   }
 
-  test("Routes to top widget witch match full path") {
+  it should "routes to top widget witch match full path" in {
     val id1 = rndId
     val id2 = rndId
     val fullPath = Path("one") / "two" / "three"
@@ -41,36 +41,41 @@ object RouterTest extends SimpleTestSuite {
       buildBranch(id1, "one", "two", "three"),
       buildBranch(id2, fullPath)
     ))
-    warn(widget)
-    assertEquals(Router.route(fullPath).id, id2)
+
+    Router.route(fullPath).render.pageId should be(id2)
   }
 
-  test("Routes to two level depth") {
+  it should "routes to two level depth" in {
     val id = rndId
     val path = Path("one", "two")
     implicit val widget: Widget = TestWidget(widgets = List(
-      buildBranch(id, path.parts.map(Path(_)) : _*)
+      buildBranch(id, path.parts.map(Path(_)): _*)
     ))
     warn(widget)
     val value = Router.route(path)
     warn(value.modifiers)
-    assertEquals(value.id, id)
+
+//    value.id should be(id)
   }
 
   /** */
 
-  implicit class IdGetter(tag: JsDom.TypedTag[Element]) {
-    def id: String =  tag.modifiers.head.head.asInstanceOf[StringFrag].v
+  implicit class IdGetter(element: Element) {
+    def pageId: String = {
+      element.innerHTML
+    }
   }
 
   private def rndId = UUID.randomUUID().toString.substring(0, 3)
 
   def warn(str: Any): Unit = {
-    def color = (str:String) => Console.BLUE + str + Console.RESET
+    def color = (str: String) => Console.BLUE + str + Console.RESET
+
     println(s"[${color("warn")}] ${color(str.toString)}")
   }
 
 }
+
 
 case class TestWidget(wid: String = "",
                       override val path: Path = Path(),
@@ -83,7 +88,7 @@ case class TestWidget(wid: String = "",
     }
     else {
       println(s"[info] $path($wid)")
-      div(wid)
+      div(id:="pageId", wid)
     }
 
   override def toString: String = s"$path($wid) -> [${widgets.mkString(",")}]"

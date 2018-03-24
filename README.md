@@ -52,9 +52,12 @@ sudo apt-get update
 sudo apt-get install sbt
 ```
 
-#### (not yet used) NODE JS 
+#### NODE JS 
+ 
+For testing, run in project dir
  
 ```bash
 curl -sL https://deb.nodesource.com/setup_8.x -o nodesource_setup.sh
+npm install jsdom
 ```
  
