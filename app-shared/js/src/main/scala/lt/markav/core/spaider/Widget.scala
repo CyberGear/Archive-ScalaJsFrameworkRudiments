@@ -14,11 +14,11 @@ trait Widget {
   protected implicit val widget: Widget = this
   protected implicit val ctx: Ctx.Owner = Ctx.Owner.safe()
 
+  protected val webPath = Var(Path())
+  protected val page: Frag = Rx { Router.route(webPath()) }
+
   val path: Path = Path()
   val widgets: List[Widget] = List.empty
-
-  val webPath = Var(Path())
-  val page: Frag = Rx { Router.route(webPath()) }
 
   def route(path: Path): Tag = {
     if (widgets.nonEmpty) webPath() = path

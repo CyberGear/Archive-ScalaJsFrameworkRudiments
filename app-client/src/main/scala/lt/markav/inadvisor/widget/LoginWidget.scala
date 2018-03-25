@@ -5,6 +5,6 @@ import lt.markav.core.spaider.Widget
 
 import scalatags.JsDom.all._
 
-class DeepWidget(override val path: Path) extends Widget {
-  override def contents: Tag = p("DeepWidget")
+case class LoginWidget(override val path: Path = "login") extends Widget {
+  override def contents: Tag = span("login")
 }
