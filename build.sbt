@@ -75,8 +75,8 @@ lazy val appClient = (project in file("app-client"))
   ).dependsOn(appSharedJS)
 
 lazy val root = (project in file("."))
+  .settings(name := "InAdvisor", commands += launch)
   .aggregate(appSharedJS, appSharedJVM, appClient, appServer)
-  .settings(commands += launch)
 
 lazy val launch = Command.command("launch") { state => "appServer/reStart" :: state }
 

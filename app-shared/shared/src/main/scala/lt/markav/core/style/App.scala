@@ -1,8 +1,8 @@
-package lt.markav.core
+package lt.markav.core.style
 
 import scalacss.DevDefaults._
 
-object Template extends StyleSheet.Inline {
+object App extends StyleSheet.Inline {
   import dsl._
 
   val body = style(

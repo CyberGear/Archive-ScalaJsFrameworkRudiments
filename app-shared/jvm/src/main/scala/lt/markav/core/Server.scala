@@ -7,6 +7,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
+import lt.markav.core.template.RootPage
+import lt.markav.core.utils.PrettyHtml.HtmlFormatter
 import upickle.default
 
 class Server(implicit val system: ActorSystem,
@@ -16,7 +18,7 @@ class Server(implicit val system: ActorSystem,
     "/" -> get {
       (pathSingleSlash & redirectToTrailingSlashIfMissing(StatusCodes.TemporaryRedirect)) {
         complete {
-          HttpEntity(`text/html(UTF-8)`, new RootPage().page)
+          HttpEntity(`text/html(UTF-8)`, new RootPage().page.prettyHtml)
         }
       } ~ getFromResourceDirectory("")
     }

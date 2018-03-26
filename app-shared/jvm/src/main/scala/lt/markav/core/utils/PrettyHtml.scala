@@ -1,6 +1,7 @@
 package lt.markav.core.utils
 
-import org.htmlcleaner.{HtmlCleaner, PrettyHtmlSerializer}
+import org.htmlcleaner.HtmlCleaner
+import org.htmlcleaner.PrettyHtmlSerializer
 
 object PrettyHtml {
 
