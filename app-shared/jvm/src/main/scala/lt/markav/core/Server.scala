@@ -7,7 +7,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import lt.markav.core.template.RootPage
+import lt.markav.core.template.IndexHtml
 import lt.markav.core.utils.PrettyHtml.HtmlFormatter
 import upickle.default
 
@@ -18,7 +18,7 @@ class Server(implicit val system: ActorSystem,
     "/" -> get {
       (pathSingleSlash & redirectToTrailingSlashIfMissing(StatusCodes.TemporaryRedirect)) {
         complete {
-          HttpEntity(`text/html(UTF-8)`, new RootPage().page.prettyHtml)
+          HttpEntity(`text/html(UTF-8)`, new IndexHtml().page.prettyHtml)
         }
       } ~ getFromResourceDirectory("")
     }
@@ -35,8 +35,6 @@ class Server(implicit val system: ActorSystem,
       }
     })
   }
-
-  akka.http.scaladsl.server.directives.BasicDirectives
 
   def start(port: Int): Unit = {
     Http().bindAndHandle(route.values.reduce(_ ~ _), "0.0.0.0", port = port)
