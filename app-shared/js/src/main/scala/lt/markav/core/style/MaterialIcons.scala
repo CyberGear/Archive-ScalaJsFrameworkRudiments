@@ -7,7 +7,9 @@ import scalatags.JsDom.all._
 
 object MaterialIcons {
 
-  val add: JsDom.TypedTag[Element] = icon("add")
+  val Add: JsDom.TypedTag[Element] = icon("add")
+
+  val Done: JsDom.TypedTag[Element] = icon("done")
 
   private def icon(name: String) = i(`class` := "material-icons", name)
 }

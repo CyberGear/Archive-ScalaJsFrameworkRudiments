@@ -11,5 +11,6 @@ trait PageIds
 
 object PageIds extends PageIds {
   val MainContainer: TagId = "mainContainer"
+  val HeaderFab: TagId = "headerFab"
 }
 

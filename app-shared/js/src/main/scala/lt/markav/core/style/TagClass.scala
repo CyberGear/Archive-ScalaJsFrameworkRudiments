@@ -8,7 +8,7 @@ object TagClass {
 
   implicit def boxToTagClass(cls: String): TagClass = TagClass(cls)
 
-  implicit final def unboxToTextAttr(cls: TagClass): JsDom.all.Modifier = builder => {
+  implicit final def unboxToJsDomAttr(cls: TagClass): JsDom.all.Modifier = builder => {
     builder.classList.add(cls.`class`)
   }
 }
