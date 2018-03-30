@@ -15,6 +15,7 @@ object Router extends Logging {
   }
 
   def route(path: Path)(implicit context: Widget): TypedTag[Element] = {
+    println(s"Routing to $path")
     validate(context.widgets)
     val (empty, filled) = context.widgets.partition(_.path.isEmpty)
     if (path.isEmpty) context.widgets.headOption.getOrElse(`404Widget`).contents
@@ -27,9 +28,7 @@ object Router extends Logging {
         case None => throughEmpty match {
           case widget :: Nil => widget.route(path after widget.path)
           case Nil => `404Widget`.contents
-          case _ :: _ => throw JavaScriptException(
-            s"Duplicated endpoints in ${context.path} empty paths for $path"
-          )
+          case _ :: _ => throw JavaScriptException(s"Duplicated endpoints in ${context.path} empty paths for $path")
         }
       }
     }
